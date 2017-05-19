@@ -16,6 +16,7 @@ router.get('/reddit', function(req, res, next) {
 
 router.get('/reddit/callback', function(req, res, next){
   // Check for origin via state token
+  console.log('cb: '+ req.params.state);
   if (req.query.state == req.session.state){
     passport.authenticate('reddit', {
       successRedirect: '/',

@@ -4,7 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var busBoy = require('express-busboy');
+var multer = require('multer');
+
 var methodOverride = require('method-override');
 var session = require('express-session');
 var mongoose = require('mongoose');
@@ -33,7 +34,6 @@ passport.deserializeUser(function(obj, done) {
   done(null, obj);
 });
 
-
 // Use the RedditStrategy within Passport.
 //   Strategies in Passport require a `verify` function, which accept
 //   credentials (in this case, an accessToken, refreshToken, and Reddit
@@ -48,10 +48,8 @@ passport.use(new RedditStrategy({
     scope:['identity','mysubreddits']
   },
   function(accessToken, refreshToken, profile, done) {
-    console.log(accessToken + ' ' + refreshToken);
     User.findOrCreate({redditUserID: profile.id, username:profile.name}, function(err,user){
       Reddit.getModeratorList(accessToken,function(error2, data){
-        console.log(data);
         var subs=[];
         data.forEach(function(sr){
             subs.push(sr.display_name);
@@ -75,14 +73,10 @@ passport.use(new RedditStrategy({
 
 var app = express();
 
-/*
-busBoy.extend(app, {
-  upload:true
-});
-*/
 
 //define app root
 global.appRoot = path.resolve(__dirname);
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -94,7 +88,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(methodOverride());
-app.use(session({ secret: 'keyboard cat', state:'midnight bacon' }));
+app.use(session({
+  state: 'whyIsntThisWorkingAllTheTime',
+  secret: 'keyboard cat',
+  subreddit:''
+ }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -116,7 +114,7 @@ db.on('error', function(){
 
 //on success, try to start photoshop and the watchdog.
 db.on('open', function(){
-  console.log("success");
+  console.log("connected");
   watchdog.initWatchDog();
 });
 
