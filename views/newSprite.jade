@@ -1,0 +1,13 @@
+extends layout
+
+block addCSS
+  link(rel='stylesheet', href='/stylesheets/dropzone.css')
+
+block content
+  br
+  form#spriteDrop.dropzone(action='/sprites/new')
+    div.dropzone-previews#previews
+
+block addJS
+  script(src='/javascripts/dropzone.js')
+  script(src='/javascripts/dropzoneAddOn.js')
