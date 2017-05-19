@@ -1,0 +1,141 @@
+var express = require('express');
+var path = require('path');
+var favicon = require('serve-favicon');
+var logger = require('morgan');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
+var busBoy = require('express-busboy');
+var methodOverride = require('method-override');
+var session = require('express-session');
+var mongoose = require('mongoose');
+var passport = require('passport');
+var util = require('util');
+var crypto = require('crypto');
+var RedditStrategy = require('passport-reddit').Strategy;
+
+var watchdog = require('./util/watchdog.js');
+var Snoowrap = require('snoowrap');
+
+var index = require('./routes/index');
+var flair = require('./routes/flair');
+var sprite = require('./routes/sprite');
+var subreddit = require('./routes/subreddit');
+var auth = require('./routes/auth');
+
+var REDDIT_CONSUMER_KEY_WEB = "eI-JGOJSgVzEKQ";
+var REDDIT_CONSUMER_SECRET_WEB = "p0uUVwI0qWdXWy4D9_tFGfhvmGY";
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+  done(null, obj);
+});
+
+
+// Use the RedditStrategy within Passport.
+//   Strategies in Passport require a `verify` function, which accept
+//   credentials (in this case, an accessToken, refreshToken, and Reddit
+//   profile), and invoke a callback with a user object.
+const User = require('./models/userModel.js');
+const Reddit = require('./reddit/reddit.js');
+const Subreddit = require('./models/subredditModel.js');
+passport.use(new RedditStrategy({
+    clientID: REDDIT_CONSUMER_KEY_WEB,
+    clientSecret: REDDIT_CONSUMER_SECRET_WEB,
+    callbackURL: "http://127.0.0.1:3000/auth/reddit/callback",
+    scope:['identity','mysubreddits']
+  },
+  function(accessToken, refreshToken, profile, done) {
+    console.log(accessToken + ' ' + refreshToken);
+    User.findOrCreate({redditUserID: profile.id, username:profile.name}, function(err,user){
+      Reddit.getModeratorList(accessToken,function(error2, data){
+        console.log(data);
+        var subs=[];
+        data.forEach(function(sr){
+            subs.push(sr.display_name);
+            Subreddit.findOrCreate({subredditName:sr.display_name}, function(err, sub){
+              if(err){return done(err,null)}
+              if(sub.moderators.indexOf(user.username)==-1){
+                sub.moderators.push(user.username);
+                sub.save();
+              }
+            })
+        })
+        user.associatedSubreddits = subs;
+        user.save(function(er){
+          if(er){res.send("err")}
+          return done(err,user);
+        })
+      })
+    })
+  }
+));
+
+var app = express();
+
+/*
+busBoy.extend(app, {
+  upload:true
+});
+*/
+
+//define app root
+global.appRoot = path.resolve(__dirname);
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+
+// uncomment after placing your favicon in /public
+//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(methodOverride());
+app.use(session({ secret: 'keyboard cat', state:'midnight bacon' }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use('/', index);
+app.use('/flair', flair);
+app.use('/sprites', sprite);
+app.use('/subreddits', subreddit);
+app.use('/auth', auth);
+
+//establish connnection to local mongoDB instance
+mongoose.connect('mongodb://localhost/spriteGen');
+var db = mongoose.connection;
+
+//on error, do something (probably quit the app)
+db.on('error', function(){
+  process.exit(1);
+});
+
+//on success, try to start photoshop and the watchdog.
+db.on('open', function(){
+  console.log("success");
+  watchdog.initWatchDog();
+});
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+module.exports = app;

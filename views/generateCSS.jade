@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  button(onclick='fetchCSS()') Click
+  h1= "Generated CSS"
+  pre!=css
+  h1= "Markdown"
+  pre!=markdown

@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  form(method='post', action='')
+    div.form-group
+      label(for='subredditName') Subreddit Name
+      input.form-control(id='subredditName', name='subredditName', type='text')
+    div.form-group
+      button.btn.btn-default(type="submit") Submit

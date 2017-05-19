@@ -1,0 +1,25 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  div
+    table.table
+      thead
+        tr
+          th Subreddit ID
+          th Name
+          th Moderators
+          th Sprites
+          th Actions
+      tbody
+        each subreddit in subreddits
+          tr
+            td=subreddit._id
+            td=subreddit.subredditName
+            td=subreddit.moderators
+            td
+              a(href="/sprites/#{subreddit._id}") Sprites Here
+            td
+              a(href="/subreddits/delete/#{subreddit._id}")
+                i.icono-cross(style='color:black;')
