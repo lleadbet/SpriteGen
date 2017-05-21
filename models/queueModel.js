@@ -3,6 +3,7 @@ var mongoose = require('mongoose');
 var queueSchema = mongoose.Schema({
   fileName:String,
   spriteID:String,
+  subreddit:String,
   markedAsComplete:Date,
   markedAsErred:Date,
   dateAdded:Date

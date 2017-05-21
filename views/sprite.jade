@@ -2,13 +2,13 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  if sprites.length
+    a(href='/sprites/new/#{sprites[0].subredditName}') Add New Sprites Here
   div
     table.table
       thead
         tr
           th Sprite
-          th ID
           th League
           th Team
           th Subreddit
@@ -17,9 +17,8 @@ block content
       tbody
         each sprite in sprites
           tr
-            td=sprite.id
             td
-              img(src="/flair/0/sprites/flair-#{sprite.id}.png")
+              img(src="/flair/#{sprite.subredditName}/sprites/flair-#{sprite.id}.png")
             td=sprite.league
             td=sprite.teamName
             td=sprite.subredditName

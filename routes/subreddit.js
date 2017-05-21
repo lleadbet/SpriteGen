@@ -4,10 +4,10 @@ const Subreddit = require('../models/subredditModel.js');
 
 /* GET home page. */
 router.get('/:srName?',ensureLoggedIn(),function(req, res, next) {
-  if(req.params.srName){
+  if(req.params.srName && req.user.associatedSubreddits.includes(req.params.srName)){
     Subreddit.find({subredditName:req.params.srName, moderators:req.user.username, dateDeleted:null}, function(err,sr){
       if(err){
-        res.send("error");
+        res.send("Error retrieving subreddits.");
       }
       console.log(sr);
       res.render('subreddit',
@@ -22,7 +22,7 @@ router.get('/:srName?',ensureLoggedIn(),function(req, res, next) {
   else{
     Subreddit.find({dateDeleted:null, moderators:req.user.username}, function(err,subreddits){
       if(err){
-        res.send("error");
+        res.send("Error retrieving subreddits.");
       }
       else{
         res.render('subreddit',
@@ -34,19 +34,26 @@ router.get('/:srName?',ensureLoggedIn(),function(req, res, next) {
       }
     })
   }
-});
+},unauthorizedAccess());
 
 function ensureLoggedIn() {
   return function(req, res, next) {
     // isAuthenticated is set by `deserializeUser()`
     if (!req.isAuthenticated || !req.isAuthenticated()) {
-      res.status(401).send({
-        success: false,
-        message: 'You need to be authenticated to access this page!'
-      })
+      res.status(401);
+      res.redirect('/');
     } else {
       next()
     }
+  }
+}
+
+function unauthorizedAccess(){
+  return function(req,res,next){
+    res.status(401).send({
+      success: false,
+      message: 'You are not authorized to access this page.'
+    });
   }
 }
 

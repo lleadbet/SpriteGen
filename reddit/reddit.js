@@ -61,7 +61,7 @@ module.exports = {
       })
       if(subredditName && sprites){
         if(postToReddit){
-          r.getSubreddit('ConcreteEntree').getWikiPage('flair').edit({text:markDown,reason:"zug zug"}).then(console.log);
+          r.getSubreddit(subredditName).getWikiPage('flair').edit({text:markDown,reason:"zug zug"}).then(console.log);
           cb(null,markDown);
         }
         else{
@@ -78,7 +78,7 @@ module.exports = {
       if(postToReddit){
         flairSheets.forEach(function(sheet){
           var readable = fs.createReadStream(sheet.path);
-          r.getSubreddit('ConcreteEntree').uploadStylesheetImage({name:sheet.name, file:readable}).then(cb());
+          r.getSubreddit(subredditName).uploadStylesheetImage({name:sheet.name, file:readable}).then(cb());
         })
       }
       else{
@@ -93,7 +93,8 @@ module.exports = {
     const entities= new Entities();
 
     if(subredditName && css){
-      r.rawRequest({baseUrl:'https://www.reddit.com/', uri:'r/concreteentree/about/stylesheet.json', method:'get'}).then(function(oldCss){
+      console.log('https://www.reddit.com/' + 'r/'+subredditName+'/about/stylesheet.json');
+      r.rawRequest({baseUrl:'https://www.reddit.com/', uri:'r/'+subredditName+'/about/stylesheet.json', method:'get'}).then(function(oldCss){
         oldCss=JSON.parse(oldCss);
         var match=oldCss.data.stylesheet.match(/\/\*\ STAN'S\ DOMAIN\ DO\ NOT\ TOUCH\ BELOW\ THIS\ LINE\ \*\/[\S\s]*\/\*\ STAN'S\ DOMAIN\ DO\ NOT\ TOUCH\ ABOVE\ THIS\ LINE\ \*\//);
         console.log(match);

@@ -25,6 +25,7 @@ module.exports = {
     reddit.checkMessages();
 
     watcher.on('create', function(file,stats){
+      /*
       var prevSize=-1;
       var intervalTimer = setInterval(function(){
         if(stats.size==prevSize){
@@ -57,6 +58,7 @@ module.exports = {
         }
       }, 3000);
       console.log(stats);
+      */
     });
 
     watcher.on('change', function(file, stats){
@@ -64,11 +66,6 @@ module.exports = {
     });
 
     watcher.on('delete', function(file, stats){
-      cssGen.generateCSS();
     });
-  },
-
-  closeWatchDog: function(){
-
   }
 }

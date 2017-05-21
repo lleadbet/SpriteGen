@@ -1,5 +1,5 @@
 module.exports ={
-  generateCSS: function(highRes=true, postToReddit=false, subredditName="ConcreteEntree", cb){
+  generateCSS: function(highRes=true, postToReddit=false, subredditName, cb){
     const glob = require('glob');
     const fs = require('fs');
     const path = require('path');
@@ -23,13 +23,17 @@ module.exports ={
 
     //generating the arrays that are used for the various Reddit updates
     var flairLinks=[];
-    var storeSprites;
-    Sprite.find({dateDeleted:null},null, {sort: {cssClass:1}}, function(err, sprites){
+    var storeSprites=[];
+    Sprite.find({dateDeleted:null, subredditName:subredditName},null, {sort: {cssClass:1}}, function(err, sprites){
       if(err){return err;}
       else{
         var i=0;
-        storeSprites=sprites;
         sprites.forEach(function(s){
+          var obj = {};
+          obj._id=i;
+          obj.teamName=s.teamName;
+          obj.league=s.league;
+          storeSprites.push(obj);
           console.log(i);
           if(i % 10 == 0 && i!=0){
             pixRow+=dimensions;
@@ -45,7 +49,7 @@ module.exports ={
             custom= ", a[href*='#flair-"+s.customCSSClass+"']:before, .flair-" + s.customCSSClass +":before";
           }
 
-          css = css + "a[href*='#flair-"+s._id+"']:before, .flair-" + s._id +":before"+(custom || '')+"{background-position:-" + pixColumn + "px -" + pixRow + "px;}\n";
+          css = css + "a[href*='#flair-"+i+"']:before, .flair-" + i +":before"+(custom || '')+"{background-position:-" + pixColumn + "px -" + pixRow + "px;}\n";
           //console.log(css);
           pixColumn=pixColumn + dimensions;
           i++;
@@ -55,16 +59,14 @@ module.exports ={
       }
     });
 
-    glob(appRoot+'/public/flair/0/flairsheets/flair*.png', function(err, flairFiles){
+    glob(appRoot+'/public/flair/'+subredditName+'/flairsheets/flair*.png', function(err, flairFiles){
         flairFiles.forEach(function(sheet){
           //flairLinks.push("/flair/0/flairsheets/"+path.basename(appRoot+sheet));
-          flairLinks.push({name: path.basename(sheet, '.png'), path:sheet, linkPath:"/flair/0/flairsheets/"+path.basename(sheet)});
+          flairLinks.push({name: path.basename(sheet, '.png'), path:sheet, linkPath:"/flair/"+subredditName+"/flairsheets/"+path.basename(sheet)});
         })
     });
 
-    //console.log(flairLinks);
-    //console.log(css);
-    var oldDir="./public/flair/0/sprites/flair-*";
+    var oldDir="./public/flair/"+subredditName+"/sprites/flair-*";
     glob('', function(err, files){
         for(file in files){
           if(file % 10 == 0 && file!=0){

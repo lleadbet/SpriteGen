@@ -4,8 +4,8 @@ block addCSS
   link(rel='stylesheet', href='/stylesheets/dropzone.css')
 
 block content
-  br
-  form#spriteDrop.dropzone(action='/sprites/new')
+  h1 #{sr.subredditName}
+  form#spriteDrop.dropzone(action='/sprites/new/#{sr.subredditName}')
     div.dropzone-previews#previews
 
 block addJS

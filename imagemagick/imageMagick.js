@@ -4,6 +4,7 @@ module.exports={
     const fs = require('fs');
     const process = require('child_process');
     const path = require('path');
+    var mkdirp = require('mkdirp');
 
     Queue.find({markedAsComplete:null, markedAsErred:null}, null, {sort: "dateAdded"}, function(err, items){
       if(err){console.log(err);}
@@ -12,19 +13,25 @@ module.exports={
         var dimensions='20x20';
 
         if(highRes){
-          dimensions='20x20';
+          dimensions='30x30';
         }
         else{
-          dimensions='30x30';
+          dimensions='20x20';
         }
 
         items.forEach(function(qi){
+
           console.log("launching imagemagick for " + qi.fileName);
           var inputFile = appRoot+'/_uploads/'+ qi.fileName;
-          var outputFile = appRoot + '/public/flair/0/sprites/flair-'+qi.spriteID+'.png'
+          var outputFile = appRoot + '/public/flair/'+qi.subreddit+'/sprites/flair-'+qi.spriteID+'.png'
+
 
           inputFile= path.normalize(inputFile);
           outputFile= path.normalize(outputFile);
+
+          mkdirp(path.dirname(outputFile), function (err) {
+            if (err) console.error(err)
+          });
 
           process.exec('magick "'+inputFile+'" -background none -resize '+dimensions+' -gravity center -extent '+dimensions+' -quality 05 "'+ outputFile +'"', function(error, stdout, stderr){
                if (!error && includeFaded==true){
@@ -78,7 +85,7 @@ module.exports={
               if(count==0){
                   if(err){console.log(err)}
                   else{
-                    if(module.exports.generateFlairSheet(highRes)){
+                    if(module.exports.generateFlairSheet(qi.subreddit, highRes)){
                       console.log(true);
                     }
                     else{
@@ -92,10 +99,11 @@ module.exports={
       });
     },
 
-    generateFlairSheet: function(highRes=true){
+    generateFlairSheet: function(subreddit,highRes=true){
       const fs = require('fs');
       const process = require('child_process');
       const path = require('path');
+      var mkdirp = require('mkdirp');
 
       var dimensions='20x20';
 
@@ -105,8 +113,13 @@ module.exports={
       else{
         dimensions='20x20';
       }
-      var montageInputPath = path.normalize(appRoot + '/public/flair/0/sprites/');
-      var montageOutputPath = path.normalize(appRoot + '/public/flair/0/flairsheets/flair-%d.png');
+      var montageInputPath = path.normalize(appRoot + '/public/flair/'+subreddit+'/sprites/');
+      var montageOutputPath = path.normalize(appRoot + '/public/flair/'+subreddit+'/flairsheets/flair-%d.png');
+
+      if (!fs.existsSync(path.dirname(montageOutputPath))){
+        fs.mkdirSync(path.dirname(montageOutputPath));
+      }
+
       console.log('montage '+montageInputPath+'flair-*.png -background none -tile 10x20 -geometry '+dimensions+' '+montageOutputPath);
       process.exec('montage '+montageInputPath+'flair-*.png -background none -tile 10x20 -geometry '+dimensions+' '+montageOutputPath, function(err, stdout, stderr){
         if(err){

@@ -7,19 +7,20 @@ block content
     table.table
       thead
         tr
-          th Subreddit ID
           th Name
           th Moderators
           th Sprites
-          th Actions
+          th CSS
       tbody
         each subreddit in subreddits
           tr
-            td=subreddit._id
-            td=subreddit.subredditName
-            td=subreddit.moderators
             td
-              a(href="/sprites/#{subreddit._id}") Sprites Here
+              a(href='https://reddit.com/r/#{subreddit.subredditName}') #{subreddit.subredditName}
             td
-              a(href="/subreddits/delete/#{subreddit._id}")
-                i.icono-cross(style='color:black;')
+              each mod in subreddit.moderators
+                p
+                  a(href='https://reddit.com/u/#{mod}') #{mod}
+            td
+              a(href="/sprites/#{subreddit.subredditName}") Sprites
+            td
+              a(href="/flair/#{subreddit.subredditName}") CSS
