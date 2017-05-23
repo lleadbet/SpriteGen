@@ -4,7 +4,7 @@ var mongoose = require('mongoose'),
 var spriteSchema = mongoose.Schema({
   league:String,
   teamName:String,
-  filePath:String,
+  paddedID:String,
   fileName:String,
   cssClass:String,
   customCSSClass:String,

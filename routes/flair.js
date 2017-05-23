@@ -2,10 +2,14 @@ var express = require('express');
 var router = express.Router();
 var generator = require('../util/cssGen.js');
 
-router.post('/:subredditName', ensureLoggedIn(),function(req, res){
+router.post('/:subredditName?', ensureLoggedIn(),function(req, res){
+  console.log('posting');
   if(req.params.subredditName && req.user.associatedSubreddits.includes(req.params.subredditName)){
-    generator.generateCSS(true, true, "ConcreteEntree", function(err, css, markdown, flairLinks){
+    console.log('pre-gen');
+    generator.generateCSS(true, true, req.params.subredditName, function(err, css, markdown, flairLinks){
+      console.log('called gen');
       if(err){
+        console.log('erring out');
         res.locals.message = err.message;
         res.locals.error = req.app.get('env') === 'development' ? err : {};
 
@@ -14,6 +18,7 @@ router.post('/:subredditName', ensureLoggedIn(),function(req, res){
         res.render('error');
       }
       else{
+        console.log('Succeeded?');
         res.render('flair', {
           title: 'Sam the Flair Man',
           css: css,
@@ -21,7 +26,10 @@ router.post('/:subredditName', ensureLoggedIn(),function(req, res){
           flairLinks:flairLinks,
           user:req.user});
         };
-      })
+    })
+  }
+    else{
+      res.send('err');
     }
 })
 

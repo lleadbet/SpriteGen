@@ -5,4 +5,5 @@ Dropzone.options.spriteDrop = {
   acceptedFiles:'image/png',
   uploadMultiple: true,
   previewsContainer: '#previews',
+  addRemoveLinks: true
 };

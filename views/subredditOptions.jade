@@ -1,0 +1,94 @@
+extends layout
+
+block content
+  form.form-horizontal(action='', method='post')
+    if s.options
+      fieldset
+        // Form Name
+        legend #{s.subredditName} Options
+        // Multiple Radios
+        .form-group
+          label.col-md-4.control-label(for='genFlairClasses') Generate Generic Flair Class?
+          .col-md-4
+            .radio
+              label(for='genFlairClasses-0')
+                input#genFlairClasses-0(type='radio', name='genFlairClasses', value='true', checked=s.options.genFlairClasses==true)
+                |       Yes
+            .radio
+              label(for='genFlairClasses-1')
+                input#genFlairClasses-1(type='radio', name='genFlairClasses', value='false',checked=s.options.genFlairClasses==false)
+                |       No
+        // Multiple Radios
+        .form-group
+          label.col-md-4.control-label(for='highRes') Quality of Sprites
+          .col-md-4
+            .radio
+              label(for='highRes-0')
+                input#highRes-0(type='radio', name='highRes', value='false', checked=s.options.highRes==false)
+                |       20x20
+            .radio
+              label(for='highRes-1')
+                input#highRes-1(type='radio', name='highRes', value='true',checked=s.options.highRes==true)
+                |       30x30
+        // Multiple Radios
+        .form-group
+          label.col-md-4.control-label(for='prependCustom') Prepend Custom CSS with 'flair-'?
+          .col-md-4
+            .radio
+              label(for='prependCustom-0')
+                input#prependCustom-0(type='radio', name='prependCustom', value='true', checked=s.options.prependCustom==true)
+                |       Yes
+            .radio
+              label(for='prependCustom-1')
+                input#prependCustom-1(type='radio', name='prependCustom', value='false',checked=s.options.prependCustom==false)
+                |       No
+        // Button
+        .form-group
+          label.col-md-4.control-label(for='submit') Submit
+          .col-md-4
+            button#submit.btn.btn-default(name='submit') Submit
+    else
+      fieldset
+        // Form Name
+        legend #{s.subredditName} Options
+        // Multiple Radios
+        .form-group
+          label.col-md-4.control-label(for='genFlairClasses') Generate Generic Flair Class?
+          .col-md-4
+            .radio
+              label(for='genFlairClasses-0')
+                input#genFlairClasses-0(type='radio', name='genFlairClasses', value='true', checked='true')
+                |       Yes
+            .radio
+              label(for='genFlairClasses-1')
+                input#genFlairClasses-1(type='radio', name='genFlairClasses', value='false')
+                |       No
+        // Multiple Radios
+        .form-group
+          label.col-md-4.control-label(for='highRes') Quality of Sprites
+          .col-md-4
+            .radio
+              label(for='highRes-0')
+                input#highRes-0(type='radio', name='highRes', value='false', checked='checked')
+                |       20x20
+            .radio
+              label(for='highRes-1')
+                input#highRes-1(type='radio', name='highRes', value='true')
+                |       30x30
+        // Multiple Radios
+        .form-group
+          label.col-md-4.control-label(for='prependCustom') Prepend Custom CSS with 'flair-'?
+          .col-md-4
+            .radio
+              label(for='prependCustom-0')
+                input#prependCustom-0(type='radio', name='prependCustom', value='true', checked='checked')
+                |       Yes
+            .radio
+              label(for='prependCustom-1')
+                input#prependCustom-1(type='radio', name='prependCustom', value='false')
+                |       No
+        // Button
+        .form-group
+          label.col-md-4.control-label(for='submit') Submit
+          .col-md-4
+            button#submit.btn.btn-default(name='submit') Submit

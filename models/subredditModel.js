@@ -4,7 +4,7 @@ var mongoose = require('mongoose'),
 
 var subredditSchema = mongoose.Schema({
   subredditName:String,
-  settings:Object,
+  options:Object,
   moderators:Array,
   dateDeleted:Date
 });

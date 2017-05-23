@@ -2,6 +2,51 @@ var express = require('express');
 var router = express.Router();
 const Subreddit = require('../models/subredditModel.js');
 
+router.get('/:srName/options',ensureLoggedIn(),function(req, res, next) {
+  if(req.params.srName && req.user.associatedSubreddits.includes(req.params.srName)){
+    Subreddit.findOne({subredditName:req.params.srName, moderators:req.user.username, dateDeleted:null}, function(err,sr){
+      if(err){
+        res.send("Error retrieving subreddits.");
+      }
+      res.render('subredditOptions',{
+        title: 'Stan the Flair Man',
+        s:sr,
+        user:req.user
+      });
+    })
+  }
+  else{
+    next();
+  }
+},unauthorizedAccess());
+
+router.post('/:srName/options',ensureLoggedIn(),function(req, res, next) {
+  if(req.params.srName && req.user.associatedSubreddits.includes(req.params.srName)){
+    Subreddit.findOne({subredditName:req.params.srName, moderators:req.user.username, dateDeleted:null}, function(err,sr){
+      if(err){
+        res.send("Error retrieving subreddits.");
+      }
+      var isGenFlairClassesSet = (req.body.genFlairClasses == 'true');
+      var ishighResSet = (req.body.highRes == 'true');
+      var isprependCustomSet = (req.body.prependCustom == 'true');
+      var updateFlair =
+      sr.options = {genFlairClasses: isGenFlairClassesSet, highRes:ishighResSet, prependCustom:isprependCustomSet};
+
+      sr.save(function(err, uSr){
+        if(err){res.status(500).send('Internal Server Error')}
+        else{
+          console.log(uSr);
+          res.status(200);
+          res.redirect('/subreddits/'+req.params.srName);
+        }
+      });
+    })
+  }
+  else{
+    next();
+  }
+},unauthorizedAccess());
+
 /* GET home page. */
 router.get('/:srName?',ensureLoggedIn(),function(req, res, next) {
   if(req.params.srName && req.user.associatedSubreddits.includes(req.params.srName)){
@@ -9,7 +54,6 @@ router.get('/:srName?',ensureLoggedIn(),function(req, res, next) {
       if(err){
         res.send("Error retrieving subreddits.");
       }
-      console.log(sr);
       res.render('subreddit',
       {
         title: 'Sam the Flair Man',

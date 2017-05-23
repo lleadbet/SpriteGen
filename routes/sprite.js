@@ -65,7 +65,7 @@ router.post('/update/:id', ensureLoggedIn(), function(req,res, next){
         sprite.customCSSClass=req.body.customCSSClass;
         sprite.save(function(err, updatedSprite){
           if(err){res.redirect('/sprites?=' + err)}
-          else{res.redirect('/sprites?=succesful')}
+          else{res.redirect('/sprites/'+sprite.subredditName)}
         })
       }
     })
@@ -115,7 +115,6 @@ router.post('/new/:srName', ensureLoggedIn(), function(req,res){
       }
     });
     var upload = multer({storage:storage}).any();
-
     upload(req,res, function(err){
       if(err){
         res.status(500);
@@ -123,32 +122,44 @@ router.post('/new/:srName', ensureLoggedIn(), function(req,res){
         res.send(err);
       }
       else{
-        req.files.forEach(function(file){
-          console.log(file);
-          var newFile = new Sprite({
-            league:"",
-            teamName:"",
-            fileName: file.filename,
-            subredditName:req.params.srName
-          }).save(function(err, ns){
-            if (err){console.log(err);}
-            else{
-              Sprite.findByIdAndUpdate(ns.id, {$set:{cssClass:"flair-logo-"+ns.id}},function(){
-                new Queue({
-                  fileName:ns.fileName,
-                  subreddit:req.params.srName,
-                  spriteID:ns.id,
-                  dateAdded:new Date()
-                }).save(function(err, qi){
-                  if(err){console.log(err)}
-                  else{console.log("queue item created");}
-                  });
-                });
-              };
-            });
-          })
+        Subreddit.findOne({subredditName:req.params.srName},function(err, sr){
+          var highRes=false;
+          if(sr.options){
+            if(sr.options.highRes){
+              highRes=true;
+            }
           }
-        })
+          req.files.forEach(function(file){
+            var newFile = new Sprite({
+              league:req.body.league,
+              teamName:"",
+              fileName: file.filename,
+              subredditName:req.params.srName
+            }).save(function(err, ns){
+              if (err){console.log(err);}
+              else{
+                var bufferSize = 12 - ns._id.toString().length + 1;
+                var spriteID = new Array(bufferSize).join(0).concat(ns._id);
+                Sprite.findByIdAndUpdate(ns.id, {$set:{cssClass:"flair-logo-"+ns.id, paddedID:spriteID}},function(err,s){
+                  console.log(s.paddedID);
+                  new Queue({
+                    fileName:ns.fileName,
+                    subreddit:req.params.srName,
+                    highRes:highRes,
+                    includedFaded:false,
+                    spriteID:spriteID,
+                    dateAdded:new Date()
+                  }).save(function(err, qi){
+                    if(err){console.log(err)}
+                    else{console.log("queue item created");}
+                    });
+                  });
+                };
+              });
+            })
+          })
+        }
+      })
 
         //end of upload
 
@@ -172,7 +183,8 @@ router.get('/:subredditName?', ensureLoggedIn(), function(req, res) {
         {
           title: 'Sam the Flair Man',
           sprites:sprites,
-          user:req.user
+          user:req.user,
+          oneSubreddit:req.params.subredditName
         });
       }
     })

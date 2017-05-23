@@ -16,9 +16,8 @@ module.exports = {
     r.getInbox({options:{filter:"messages"}}).then(function(a){
       var count = a.length;
       a.forEach(function(ai){
-        if(ai.subject == "flair-id"){
-          console.log(ai);
-          r.getUser(ai.author.name).assignFlair({subredditName: 'ConcreteEntree', text:'', cssClass:ai.body}).then(function(){
+        if(ai.subject.includes('flair-id:')){
+          r.getUser(ai.author.name).assignFlair({subredditName:ai.subject.replace("flair-id:","") , text:'', cssClass:ai.body}).then(function(){
             ai.reply("Your flair has been adjusted. Everyone can always use more flair!").then(function(){
                 ai.deleteFromInbox().then(function(){
                   finish();
@@ -46,14 +45,14 @@ module.exports = {
     const r = module.exports.authorizeReddit();
     const Sprite = require('../models/spriteModel.js');
     var markDown = `#Flair by League\n`
-    Sprite.find({dateDeleted:null}).distinct('league', function(err, s){
+    Sprite.find({dateDeleted:null,subredditName:subredditName}).distinct('league', function(err, s){
       s.forEach(function(st){
         markDown+='##' + st +"\n";
         markDown+=`Flair | Team | Request
 -----|------|-------\n`;
         sprites.forEach(function(sprite){
           if(sprite.league == st){
-            markDown += `[](#flair-`+sprite._id+`)| `+sprite.teamName+`| [Request Flair](http://www.reddit.com/message/compose/?to=StanTheFlairMan&subject=flair-id&message=`+sprite._id+`)\n`;
+            markDown += `[](#flair-`+sprite._id+`)| `+sprite.teamName+`| [Request Flair](http://www.reddit.com/message/compose/?to=StanTheFlairMan&subject=flair-id:`+subredditName+`&message=`+sprite._id+`)\n`;
           }
         })
 
@@ -76,9 +75,11 @@ module.exports = {
     const r = module.exports.authorizeReddit();
     if(subredditName && flairSheets){
       if(postToReddit){
-        flairSheets.forEach(function(sheet){
+          flairSheets.forEach(function(sheet){
           var readable = fs.createReadStream(sheet.path);
-          r.getSubreddit(subredditName).uploadStylesheetImage({name:sheet.name, file:readable}).then(cb());
+          r.getSubreddit(subredditName).uploadStylesheetImage({name:sheet.name, file:readable}).then(function(){
+            cb();
+          });
         })
       }
       else{
@@ -93,18 +94,16 @@ module.exports = {
     const entities= new Entities();
 
     if(subredditName && css){
-      console.log('https://www.reddit.com/' + 'r/'+subredditName+'/about/stylesheet.json');
       r.rawRequest({baseUrl:'https://www.reddit.com/', uri:'r/'+subredditName+'/about/stylesheet.json', method:'get'}).then(function(oldCss){
         oldCss=JSON.parse(oldCss);
         var match=oldCss.data.stylesheet.match(/\/\*\ STAN'S\ DOMAIN\ DO\ NOT\ TOUCH\ BELOW\ THIS\ LINE\ \*\/[\S\s]*\/\*\ STAN'S\ DOMAIN\ DO\ NOT\ TOUCH\ ABOVE\ THIS\ LINE\ \*\//);
-        console.log(match);
         if(match==null){
-          console.log('err');
           cb(new Error("Appears that your stylesheet isn't configured properly. Make sure you have the proper tags entered in the spreadsheet. For more information, see the Getting Started Guide."),null);
         }
         else{
           var updatedCSS=oldCss.data.stylesheet.replace(/\/\*\ STAN'S\ DOMAIN\ DO\ NOT\ TOUCH\ BELOW\ THIS\ LINE\ \*\/[\S\s]*\/\*\ STAN'S\ DOMAIN\ DO\ NOT\ TOUCH\ ABOVE\ THIS\ LINE\ \*\//, css);
           updatedCSS=entities.decode(updatedCSS);
+          //console.log(updatedCSS);
           if(subredditName && css){
             if(postToReddit){
               r.getSubreddit(subredditName).updateStylesheet({css:updatedCSS, reason:"bleep bloop adding more flair bleep bloop"});

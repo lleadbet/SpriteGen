@@ -5,8 +5,12 @@ block addCSS
 
 block content
   h1 #{sr.subredditName}
-  form#spriteDrop.dropzone(action='/sprites/new/#{sr.subredditName}')
-    div.dropzone-previews#previews
+  form.dropzone(action='/sprites/new/#{sr.subredditName}')
+    label#league(for='league') League: 
+    input#league(type="text",name='league')
+    div#spriteDrop
+      div.dropzone-previews#previews
+
 
 block addJS
   script(src='/javascripts/dropzone.js')

@@ -5,9 +5,9 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var multer = require('multer');
-
 var methodOverride = require('method-override');
 var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
 var mongoose = require('mongoose');
 var passport = require('passport');
 var util = require('util');
@@ -16,6 +16,7 @@ var RedditStrategy = require('passport-reddit').Strategy;
 
 var watchdog = require('./util/watchdog.js');
 var Snoowrap = require('snoowrap');
+const glob = require('glob');
 
 var index = require('./routes/index');
 var flair = require('./routes/flair');
@@ -116,6 +117,7 @@ db.on('error', function(){
 db.on('open', function(){
   console.log("connected");
   watchdog.initWatchDog();
+  app.use(session({ mongooseConnection: db }));
 });
 
 // catch 404 and forward to error handler
