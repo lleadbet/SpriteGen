@@ -29,7 +29,7 @@ router.get('/reddit/callback', function(req, res, next){
 });
 
 router.get('/profile', function(req, res, next) {
-  res.json(req.user);
+  res.json();
 });
 
   router.get('/logout', function(req, res, next){

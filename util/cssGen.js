@@ -74,18 +74,15 @@ module.exports ={
             })
 
             finish();
+
             function finish(){
               count--;
               if(count==0){
                   css += "/* STAN'S DOMAIN DO NOT TOUCH ABOVE THIS LINE */";
                   if(err){console.log(err)}
                   else{
-                    console.log("okay");
                     glob(appRoot+'/public/flair/'+subredditName+'/flairsheets/flair*', function(err, flairFiles){
-                        console.log(flairFiles);
                         flairFiles.forEach(function(sheet){
-                          console.log('there are files');
-                          //flairLinks.push("/flair/0/flairsheets/"+path.basename(appRoot+sheet));
                           flairLinks.push({name: path.basename(sheet, '.png'), path:sheet, linkPath:"/flair/"+subredditName+"/flairsheets/"+path.basename(sheet)});
                         })
                         module.exports.postToReddit(subredditName, postToReddit, flairLinks, css, storeSprites, function(err, newCSS, markDown, flairLinks){
@@ -105,20 +102,22 @@ module.exports ={
       }
     });
   },
+
   postToReddit: function(subredditName, postToReddit, flairLinks, css, storeSprites, cb){
     const reddit = require('../reddit/reddit.js');
+
     console.log('calling flair');
     reddit.updateFlairImage(subredditName,flairLinks,postToReddit,function(err){
         if(err){
-          //cb(err,null,null,null);
-          console.log(err);
+          cb(err,null,null,null);
+          //console.log(err);
         }
         else{
           console.log('calling ss');
           reddit.updateStylesheet(subredditName,css,postToReddit,function(err, newCSS){
             if(err){
-              //cb(err,null,null,null);
-              console.log(err);
+              cb(err,null,null,null);
+              //console.log(err);
             }
             else{
               console.log('calling wiki');

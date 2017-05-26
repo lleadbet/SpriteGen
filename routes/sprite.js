@@ -9,6 +9,7 @@ const multer = require('multer');
 const im = require('../imagemagick/imageMagick.js');
 const crypto = require('crypto');
 const mime = require('mime');
+const validator = require('validator');
 
 router.get('/delete/:id', ensureLoggedIn(), function(req,res,next){
   Sprite.findOne({_id:req.params.id}, function(err,sprite){
@@ -20,7 +21,8 @@ router.get('/delete/:id', ensureLoggedIn(), function(req,res,next){
       {
         title: 'Express',
         sprite:sprite,
-        user:req.user
+        user:req.user,
+        sessionSR: req.session.subredditName
       });
     }
   })
@@ -30,9 +32,14 @@ router.post('/delete/:id', ensureLoggedIn(), function(req,res){
   Sprite.findOneAndUpdate({_id:req.params.id}, {dateDeleted:new Date()}, function(err, s){
     if(err){console.log(err)}
     else{
-      fs.unlink(path.normalize(appRoot+"/public/flair/0/sprites/flair-"+s.id+".png"));
-      im.generateFlairSheet(true);
-      res.redirect('/sprites?=succesful');
+      Subreddit.findOne({moderators:req.user.username,subredditName:s.subredditName},function(err,sr){
+        if(err){console.log(err)}
+        else{
+          fs.unlink(path.normalize(appRoot+"/public/flair/"+s.subredditName+"/sprites/flair-"+s.paddedID+".png"));
+          im.generateFlairSheet(s.subredditName, sr.options.highRes);
+          res.redirect('/sprites?=succesful');
+        }
+      })
     }
   })
 });
@@ -47,7 +54,8 @@ router.get('/update/:id', ensureLoggedIn(), function(req,res){
       {
         title: 'Express',
         sprite:sprite,
-        user:req.user
+        user:req.user,
+        sessionSR: req.session.subredditName
       });
     }
   })
@@ -60,9 +68,9 @@ router.post('/update/:id', ensureLoggedIn(), function(req,res, next){
         res.send("error");
       }
       else{
-        sprite.league=req.body.league;
-        sprite.teamName=req.body.team;
-        sprite.customCSSClass=req.body.customCSSClass;
+        sprite.league=validator.escape(req.body.league);
+        sprite.teamName=validator.escape(req.body.team);
+        sprite.customCSSClass=validator.escape(req.body.customCSSClass);
         sprite.save(function(err, updatedSprite){
           if(err){res.redirect('/sprites?=' + err)}
           else{res.redirect('/sprites/'+sprite.subredditName)}
@@ -87,7 +95,8 @@ router.get('/new/:srName?', ensureLoggedIn(), function(req,res,next){
             title: 'Stan',
             user:req.user,
             sub:req.params.srName,
-            sr:sr
+            sr:sr,
+            sessionSR: req.session.subredditName
           });
         }
       })
@@ -184,7 +193,8 @@ router.get('/:subredditName?', ensureLoggedIn(), function(req, res) {
           title: 'Sam the Flair Man',
           sprites:sprites,
           user:req.user,
-          oneSubreddit:req.params.subredditName
+          oneSubreddit:req.params.subredditName,
+          sessionSR: req.session.subredditName
         });
       }
     })
@@ -199,7 +209,8 @@ router.get('/:subredditName?', ensureLoggedIn(), function(req, res) {
         {
           title: 'Sam the Flair Man',
           sprites:sprites,
-          user:req.user
+          user:req.user,
+          sessionSR: req.session.subredditName
         });
       }
     })

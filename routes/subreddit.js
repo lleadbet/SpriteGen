@@ -1,17 +1,22 @@
 var express = require('express');
 var router = express.Router();
 const Subreddit = require('../models/subredditModel.js');
+const validator = require('validator');
+const Queue = require('../models/queueModel.js');
+const Sprite = require('../models/spriteModel');
 
 router.get('/:srName/options',ensureLoggedIn(),function(req, res, next) {
   if(req.params.srName && req.user.associatedSubreddits.includes(req.params.srName)){
+    req.session.subredditName = req.params.srName;
     Subreddit.findOne({subredditName:req.params.srName, moderators:req.user.username, dateDeleted:null}, function(err,sr){
       if(err){
         res.send("Error retrieving subreddits.");
       }
       res.render('subredditOptions',{
         title: 'Stan the Flair Man',
-        s:sr,
-        user:req.user
+        subreddit:sr,
+        user:req.user,
+        sessionSR: req.session.subredditName
       });
     })
   }
@@ -26,18 +31,42 @@ router.post('/:srName/options',ensureLoggedIn(),function(req, res, next) {
       if(err){
         res.send("Error retrieving subreddits.");
       }
+
       var isGenFlairClassesSet = (req.body.genFlairClasses == 'true');
       var ishighResSet = (req.body.highRes == 'true');
       var isprependCustomSet = (req.body.prependCustom == 'true');
-      var updateFlair =
-      sr.options = {genFlairClasses: isGenFlairClassesSet, highRes:ishighResSet, prependCustom:isprependCustomSet};
+      var isGroupByLeague = (req.body.groupByLeague == 'true');
+
+      var updatedHROption = (ishighResSet != sr.options.highRes);
+      console.log(updatedHROption);
+
+      sr.options = {genFlairClasses: isGenFlairClassesSet, highRes:ishighResSet, prependCustom:isprependCustomSet, groupByLeague:isGroupByLeague};
 
       sr.save(function(err, uSr){
         if(err){res.status(500).send('Internal Server Error')}
         else{
-          console.log(uSr);
+          if(updatedHROption){
+            Sprite.find({subredditName:req.params.srName, dateDeleted:null},function(err,sprites){
+              if(err){res.send("error")}
+              sprites.forEach(function(s){
+                new Queue({
+                  fileName:s.fileName,
+                  subreddit:req.params.srName,
+                  highRes:ishighResSet,
+                  includedFaded:false,
+                  spriteID:s.paddedID,
+                  dateAdded:new Date()
+                }).save(function(err, qi){
+                  if(err){console.log(err)}
+                  else{console.log("queue item created");}
+                  });
+              })
+            })
+
+          }
           res.status(200);
           res.redirect('/subreddits/'+req.params.srName);
+
         }
       });
     })
@@ -50,6 +79,7 @@ router.post('/:srName/options',ensureLoggedIn(),function(req, res, next) {
 /* GET home page. */
 router.get('/:srName?',ensureLoggedIn(),function(req, res, next) {
   if(req.params.srName && req.user.associatedSubreddits.includes(req.params.srName)){
+    req.session.subredditName = req.params.srName;
     Subreddit.find({subredditName:req.params.srName, moderators:req.user.username, dateDeleted:null}, function(err,sr){
       if(err){
         res.send("Error retrieving subreddits.");
@@ -58,13 +88,14 @@ router.get('/:srName?',ensureLoggedIn(),function(req, res, next) {
       {
         title: 'Sam the Flair Man',
         subreddits:sr,
-        user:req.user
+        user:req.user,
+        sessionSR: req.session.subredditName
       });
 
     })
   }
   else{
-    Subreddit.find({dateDeleted:null, moderators:req.user.username}, function(err,subreddits){
+    Subreddit.find({dateDeleted:null, moderators:req.user.username}, function(err,sr){
       if(err){
         res.send("Error retrieving subreddits.");
       }
@@ -72,7 +103,7 @@ router.get('/:srName?',ensureLoggedIn(),function(req, res, next) {
         res.render('subreddit',
         {
           title: 'Sam the Flair Man',
-          subreddits:subreddits,
+          subreddits:sr,
           user:req.user
         });
       }

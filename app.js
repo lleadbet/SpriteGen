@@ -13,8 +13,8 @@ var passport = require('passport');
 var util = require('util');
 var crypto = require('crypto');
 var RedditStrategy = require('passport-reddit').Strategy;
-
-var watchdog = require('./util/watchdog.js');
+var imageMagick = require('./imagemagick/imageMagick.js');
+var reddit = require('./reddit/reddit.js');
 var Snoowrap = require('snoowrap');
 const glob = require('glob');
 
@@ -89,20 +89,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(methodOverride());
-app.use(session({
-  state: 'whyIsntThisWorkingAllTheTime',
-  secret: 'keyboard cat',
-  subreddit:''
- }));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use('/', index);
-app.use('/flair', flair);
-app.use('/sprites', sprite);
-app.use('/subreddits', subreddit);
-app.use('/auth', auth);
 
 //establish connnection to local mongoDB instance
 mongoose.connect('mongodb://localhost/spriteGen');
@@ -116,9 +102,35 @@ db.on('error', function(){
 //on success, try to start photoshop and the watchdog.
 db.on('open', function(){
   console.log("connected");
-  watchdog.initWatchDog();
-  app.use(session({ mongooseConnection: db }));
+  setInterval(function(){
+    imageMagick.readQueueAndProcess(false,true);
+    },
+    5000
+  );
+  //start checking for messages
+  reddit.checkMessages();
 });
+
+app.use(session({
+  state: 'whyIsntThisWorkingAllTheTime',
+  name: "cookiesTasteGood",
+  secret: 'keyboard cat',
+  subredditName:'',
+  resave:true,
+  saveUninitialized:true,
+  store: new MongoStore({mongooseConnection:mongoose.connection})
+ }));
+
+ app.use(express.static(path.join(__dirname, 'public')));
+ app.use(passport.initialize());
+ app.use(passport.session());
+
+app.use('/', index);
+app.use('/flair', flair);
+app.use('/sprites', sprite);
+app.use('/subreddits', subreddit);
+app.use('/auth', auth);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

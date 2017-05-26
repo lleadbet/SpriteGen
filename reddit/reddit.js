@@ -7,6 +7,10 @@ module.exports = {
       clientSecret: 'cQ7od65tip4lVanK81qDrrlFgUc',
       refreshToken: '2875276241-mFyy2VgLuozZIaODSzfD_AsHEFo'
       });
+      r.config({
+        requestDelay:100,
+        continueAfterRatelimitError:true
+      });
     return r;
   },
 
@@ -14,11 +18,11 @@ module.exports = {
     const r = module.exports.authorizeReddit();
     //r.getInbox().then(console.log);
     r.getInbox({options:{filter:"messages"}}).then(function(a){
-      var count = a.length;
+      var count = a.length + 1;
       a.forEach(function(ai){
         if(ai.subject.includes('flair-id:')){
           r.getUser(ai.author.name).assignFlair({subredditName:ai.subject.replace("flair-id:","") , text:'', cssClass:ai.body}).then(function(){
-            ai.reply("Your flair has been adjusted. Everyone can always use more flair!").then(function(){
+            ai.markAsRead().reply("Your flair has been adjusted. Everyone can always use more flair!").then(function(){
                 ai.deleteFromInbox().then(function(){
                   finish();
                 });
@@ -26,12 +30,12 @@ module.exports = {
           });
         }
         else{
-          ai.deleteFromInbox().then(function(){
+          ai.markAsRead().deleteFromInbox().then(function(){
             finish();
           });
         }
       });
-
+      finish();
       function finish(){
         count--;
         if(count==0){
@@ -55,13 +59,13 @@ module.exports = {
             markDown += `[](#flair-`+sprite._id+`)| `+sprite.teamName+`| [Request Flair](http://www.reddit.com/message/compose/?to=StanTheFlairMan&subject=flair-id:`+subredditName+`&message=`+sprite._id+`)\n`;
           }
         })
-
-
       })
+
       if(subredditName && sprites){
         if(postToReddit){
-          r.getSubreddit(subredditName).getWikiPage('flair').edit({text:markDown,reason:"zug zug"}).then(console.log);
-          cb(null,markDown);
+          r.getSubreddit(subredditName).getWikiPage('flair').edit({text:markDown,reason:"zug zug"}).then(function(){
+            cb(null,markDown);
+          });
         }
         else{
           cb(null,markDown);
@@ -75,12 +79,21 @@ module.exports = {
     const r = module.exports.authorizeReddit();
     if(subredditName && flairSheets){
       if(postToReddit){
-          flairSheets.forEach(function(sheet){
+        var count = flairSheets.length+1;
+        flairSheets.forEach(function(sheet){
           var readable = fs.createReadStream(sheet.path);
           r.getSubreddit(subredditName).uploadStylesheetImage({name:sheet.name, file:readable}).then(function(){
-            cb();
+            finish();
           });
         })
+        finish();
+
+        function finish(){
+          count--;
+          if(count==0){
+            cb();
+          }
+        }
       }
       else{
         cb();
@@ -103,6 +116,10 @@ module.exports = {
         else{
           var updatedCSS=oldCss.data.stylesheet.replace(/\/\*\ STAN'S\ DOMAIN\ DO\ NOT\ TOUCH\ BELOW\ THIS\ LINE\ \*\/[\S\s]*\/\*\ STAN'S\ DOMAIN\ DO\ NOT\ TOUCH\ ABOVE\ THIS\ LINE\ \*\//, css);
           updatedCSS=entities.decode(updatedCSS);
+          var size = Buffer.byteLength(updatedCSS,'utf8')/1000;
+          if(size>100){
+            cb(new Error("CSS will be too large (greater than 100KB). Reduce size by deleting flair or removing other classes. Your current CSS file would currently be "+size+" KB."),null);
+          }
           //console.log(updatedCSS);
           if(subredditName && css){
             if(postToReddit){
