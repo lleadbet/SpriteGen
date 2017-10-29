@@ -6,7 +6,7 @@ Auth is handled by a file that you'll need to create.
 
 That file is named reddit.json - this is going to be the in the format of:
 
-```json
+```javascript
 {
     'REDDIT_TOKEN':<token_here>,
     'REDDIT_SECRET':<secret_here>,
