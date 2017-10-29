@@ -4,11 +4,9 @@ var generator = require('../util/cssGen.js');
 const Subreddit = require('../models/subredditModel');
 
 router.post('/:subredditName?', ensureLoggedIn(),function(req, res,next){
-  console.log('posting');
   if(req.params.subredditName && req.user.associatedSubreddits.includes(req.params.subredditName)){
     Subreddit.findOne({subredditName:req.params.subredditName}, function(err, sr){
       if(err){
-        console.log('erring out');
         res.locals.message = err.message;
         res.locals.error = req.app.get('env') === 'development' ? err : {};
 
@@ -20,11 +18,8 @@ router.post('/:subredditName?', ensureLoggedIn(),function(req, res,next){
         });
       }
       else{
-        console.log('pre-gen');
         generator.generateCSS(sr.options.highRes, true, req.params.subredditName, function(err, css, markdown, flairLinks){
-          console.log('called gen');
           if(err){
-            console.log('erring out');
             res.locals.message = err.message;
             res.locals.error = req.app.get('env') === 'development' ? err : {};
 
@@ -36,7 +31,6 @@ router.post('/:subredditName?', ensureLoggedIn(),function(req, res,next){
             });
           }
           else{
-            console.log('Succeeded?');
             res.render('flair', {
               title: 'Stan the Flair Man',
               css: css,

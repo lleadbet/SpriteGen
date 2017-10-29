@@ -2,16 +2,28 @@
 
 ## Authorization
 
-Auth is handled by a file that you'll need to create.
+Auth is handled by two files that you'll need to create (but have samples included in the repo).
 
-That file is named reddit.json - this is going to be the in the format of:
+The first is a file named reddit.json - this is going to be the in the format of:
 
 ```javascript
 {
-    'REDDIT_TOKEN':<token_here>,
-    'REDDIT_SECRET':<secret_here>,
-    'REDDIT_REFRESH_TOKEN':<refresh_token_here>,
-    'REDDIT_CONSUMER_KEY':<consumer_key_here>,
-    'REDDIT_CONSUMER_SECRET':<consumer_secret_here>
+    "REDDIT_TOKEN":"",
+    "REDDIT_SECRET":"",
+    "REDDIT_REFRESH_TOKEN":"",
+    "REDDIT_CONSUMER_KEY":"",
+    "REDDIT_CONSUMER_SECRET":""
+}
+```
+
+The second is a file named config.json - this is the application configuration file.
+
+```javascript
+{
+    "REDDIT_TOKEN":"",
+    "REDDIT_SECRET":"",
+    "REDDIT_REFRESH_TOKEN":"",
+    "REDDIT_CONSUMER_KEY":"",
+    "REDDIT_CONSUMER_SECRET":""
 }
 ```

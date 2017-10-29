@@ -1,11 +1,12 @@
 module.exports = {
   authorizeReddit:function(){
     const Snoowrap = require('snoowrap');
+    const CONFIG = require('../config.json');
     const r = new Snoowrap({
       userAgent: 'nodejs:flairbot 5000:v0.1 by /u/ConcreteEntree',
-      clientId: 'K6PrrfdnHK0QSA',
-      clientSecret: 'cQ7od65tip4lVanK81qDrrlFgUc',
-      refreshToken: '2875276241-mFyy2VgLuozZIaODSzfD_AsHEFo'
+      clientId: CONFIG.REDDIT_CLIENT_ID,
+      clientSecret: CONFIG.REDDIT_CLIENT_SECRET,
+      refreshToken: CONFIG.REDDIT_REFRESH_TOKEN
       });
       r.config({
         requestDelay:100,

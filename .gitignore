@@ -1,6 +1,17 @@
+# Ignoring (but keeping the folders) of the dynamically generated content. 
 _uploads/**
 !_uploads/.gitkeep 
-node_modules/**
-.DS_Store
 css/**
 !css/.gitkeep
+public/flair/**
+!public/flair/.gitkeep
+
+# Don't commit the node_modules folder- not needed as you'll want to pull fresh copies down. 
+node_modules/**
+
+# Don't commit the config file!
+/config.json
+
+# Ignoring junk
+npm-debug.log
+*.DS_Store
