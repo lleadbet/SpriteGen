@@ -2,3 +2,5 @@ _uploads/**
 !_uploads/.gitkeep 
 node_modules/**
 .DS_STORE
+css/**
+!css/.gitkeep
