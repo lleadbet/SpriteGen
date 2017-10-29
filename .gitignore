@@ -1,4 +1,4 @@
 _uploads/**
-!somefolder/.gitkeep 
+!_uploads/.gitkeep 
 node_modules/**
 .DS_STORE
