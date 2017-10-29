@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  form(method='post', action='')
+    div.form-group
+      label(for='league') League
+      input.form-control(id='league', name='league', type='text', value=sprite.league)
+    div.form-group
+      label(for='team') Team
+      input.form-control(id='team', name='team', type='text', value=sprite.teamName)
+    div.form-group
+      label(for='customCSSClass') Custom CSS Class
+      input.form-control(id='customCSSClass', name='customCSSClass', type='text', value=sprite.customCSSClass)
+    div.form-group
+      label(for='file') File
+      input.form-control(id='file', name='file', type='text', value=sprite.fileName)
+    div.form-group
+      button.btn.btn-default(type="submit") Submit

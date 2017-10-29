@@ -1,0 +1,17 @@
+extends layout
+
+block addCSS
+  link(rel='stylesheet', href='/stylesheets/dropzone.css')
+
+block content
+  h1 #{sr.subredditName}
+  form.dropzone(action='/sprites/new/#{sr.subredditName}')
+    label#league(for='league') League: 
+    input#league(type="text",name='league')
+    div#spriteDrop
+      div.dropzone-previews#previews
+
+
+block addJS
+  script(src='/javascripts/dropzone.js')
+  script(src='/javascripts/dropzoneAddOn.js')

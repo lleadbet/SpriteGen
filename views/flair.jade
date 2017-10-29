@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  form(method='post')
+    button Click to Update Reddit
+  h1= "Generated CSS"
+  pre!=css
+  h1= "Markdown"
+  pre!=markdown
+  h1="Flairsheets"
+  each flairLink in flairLinks
+    a(href=flairLink.linkPath, target="_blank") Download here
+    br

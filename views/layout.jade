@@ -1,0 +1,60 @@
+doctype html
+html
+  head
+    meta(name='viewport', content="width=device-width, initial-scale=1")
+    title= title
+    link(rel='stylesheet', href='/stylesheets/bootstrap.min.css')
+    link(rel='stylesheet', href='/stylesheets/icono.min.css')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    block addCSS
+  body
+    nav.navbar.navbar-inverse.navbar-fixed-top
+      div.container-fluid
+        div.navbar-header
+          a.navbar-brand(href="#") Sam the Flair Man
+        ul.nav.navbar-nav
+          li
+            a(href="/") Home
+          if locals.user
+            li.dropdown
+              a.dropdown-toggle(data-toggle="dropdown", href="#") Subreddits
+                span.caret
+              ul.dropdown-menu
+                li
+                  a(href="/subreddits") View All
+                each sr in user.associatedSubreddits
+                  li
+                    a(href="/subreddits/#{sr}") #{sr}
+        if locals.user
+          div.navbar-right.navbar-nav
+            ul.nav.navbar-nav
+              li
+                a(href='') Welcome #{user.username}
+              li
+                a(href="/auth/logout") Logout
+        else
+          div.navbar-right.navbar-nav
+            ul.nav.navbar-nav
+              li
+                a(href="/auth/reddit") Login
+    if locals.sessionSR
+      div.row
+        div.col-xs-2
+          div.affix
+            h3 #{sessionSR}
+            a(href="/flair/#{sessionSR}") CSS
+            br
+            a(href="/sprites/#{sessionSR}") Sprites
+            br
+            a(href="/subreddits/#{sessionSR}") Subreddit
+            br
+            a(href="/subreddits/#{sessionSR}/options") Subreddit Options
+            br
+        div.col-xs-10
+          block content
+    else
+      div
+        block content
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js')
+  script(src='/javascripts/bootstrap.min.js')
+  block addJS

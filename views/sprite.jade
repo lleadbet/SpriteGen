@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  h1= title
+  if oneSubreddit
+    a(href='/sprites/new/#{oneSubreddit}') Add New Sprites Here
+  div
+    table.table
+      thead
+        tr
+          th Sprite
+          th League
+          th Team
+          th Subreddit
+          th Custom CSS
+          th Actions
+      tbody
+        each sprite in sprites
+          tr
+            td
+              img(src="/flair/#{sprite.subredditName}/sprites/flair-#{sprite.paddedID}.png")
+            td=sprite.league
+            td=sprite.teamName
+            td=sprite.subredditName
+            td=sprite.customCSSClass
+            td
+              a(href="/sprites/update/#{sprite.id}")
+                i.icono-gear(style='color:black;')
+              a(href="/sprites/delete/#{sprite.id}")
+                i.icono-cross(style='color:black;')
